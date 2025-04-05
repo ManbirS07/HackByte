@@ -105,7 +105,7 @@ const Index = () => {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button size="lg" asChild variant="outline" className="border-white text-black hover:bg-white/10">
                   <Link to="/register-organization">
                     Register Organization
                   </Link>
@@ -234,7 +234,7 @@ const Index = () => {
                 Register your organization on our platform to connect with passionate volunteers,
                 create events, and make a bigger impact in your community.
               </p>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
+              <Button asChild size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-gray-900">
                 <Link to="/register-organization">
                   Register Your Organization
                 </Link>

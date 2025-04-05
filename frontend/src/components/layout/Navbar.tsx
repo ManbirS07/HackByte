@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ const Navbar = () => {
                 <circle cx="12" cy="8" r="2"/>
               </svg>
             </div>
-            <span className="text-xl font-bold">Kindness Unite</span>
+            <span className="text-xl font-bold">Voluntree</span>
           </Link>
         </div>
 

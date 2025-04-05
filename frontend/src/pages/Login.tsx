@@ -1,228 +1,70 @@
-
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Building2, Shield } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent, userType: string) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Mock login logic for demonstration
-      console.log(`Logging in as ${userType} with email:`, formData.email);
-      
-      // If this were a real app, we would validate credentials with an API
-
-      // Show success message
-      toast({
-        title: "Login Successful",
-        description: `Welcome back to Kindness Unite!`,
-      });
-
-      // Redirect based on user type
-      if (userType === 'admin') {
-        navigate('/admin-dashboard');
-      } else if (userType === 'volunteer') {
-        navigate('/volunteer-dashboard');
-      } else {
-        navigate('/organization-dashboard');
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Login failed",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow py-16 flex items-center">
+      <main className="flex-grow py-16 flex items-center justify-center">
         <div className="container">
-          <div className="max-w-md mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle>Log In to Your Account</CardTitle>
-                <CardDescription>
-                  Enter your email and password to access your account
-                </CardDescription>
-              </CardHeader>
-              
-              <Tabs defaultValue="volunteer">
-                <div className="px-6">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="volunteer">Volunteer</TabsTrigger>
-                    <TabsTrigger value="organization">Organization</TabsTrigger>
-                    <TabsTrigger value="admin">Admin</TabsTrigger>
-                  </TabsList>
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-12 text-center">
+              <h1 className="text-4xl font-bold mb-4">Log In to Your Account</h1>
+              <p className="text-lg text-gray-600">
+                Access your Kindness Unite account to continue your journey
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center">
+                <div className="inline-flex p-3 rounded-full bg-blue-50 mb-4">
+                  <User className="h-6 w-6 text-blue-600" />
                 </div>
-                
-                <TabsContent value="volunteer">
-                  <form onSubmit={(e) => handleSubmit(e, 'volunteer')}>
-                    <CardContent className="space-y-4 pt-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="volunteer-email">Email</Label>
-                        <Input
-                          id="volunteer-email"
-                          name="email"
-                          type="email"
-                          placeholder="volunteer@example.com"
-                          required
-                          value={formData.email}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="volunteer-password">Password</Label>
-                          <Link 
-                            to="/forgot-password" 
-                            className="text-xs text-brand-orange hover:underline"
-                          >
-                            Forgot password?
-                          </Link>
-                        </div>
-                        <Input
-                          id="volunteer-password"
-                          name="password"
-                          type="password"
-                          required
-                          value={formData.password}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Logging in..." : "Log in as Volunteer"}
-                      </Button>
-                    </CardFooter>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="organization">
-                  <form onSubmit={(e) => handleSubmit(e, 'organization')}>
-                    <CardContent className="space-y-4 pt-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="org-email">Email</Label>
-                        <Input
-                          id="org-email"
-                          name="email"
-                          type="email"
-                          placeholder="organization@example.com"
-                          required
-                          value={formData.email}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="org-password">Password</Label>
-                          <Link 
-                            to="/forgot-password" 
-                            className="text-xs text-brand-orange hover:underline"
-                          >
-                            Forgot password?
-                          </Link>
-                        </div>
-                        <Input
-                          id="org-password"
-                          name="password"
-                          type="password"
-                          required
-                          value={formData.password}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Logging in..." : "Log in as Organization"}
-                      </Button>
-                    </CardFooter>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="admin">
-                  <form onSubmit={(e) => handleSubmit(e, 'admin')}>
-                    <CardContent className="space-y-4 pt-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="admin-email">Email</Label>
-                        <Input
-                          id="admin-email"
-                          name="email"
-                          type="email"
-                          placeholder="admin@kindnessunite.org"
-                          required
-                          value={formData.email}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="admin-password">Password</Label>
-                          <Link 
-                            to="/forgot-password" 
-                            className="text-xs text-brand-orange hover:underline"
-                          >
-                            Forgot password?
-                          </Link>
-                        </div>
-                        <Input
-                          id="admin-password"
-                          name="password"
-                          type="password"
-                          required
-                          value={formData.password}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Logging in..." : "Log in as Admin"}
-                      </Button>
-                    </CardFooter>
-                  </form>
-                </TabsContent>
-              </Tabs>
-              
-              <div className="px-6 pb-6 text-center text-sm">
-                <p className="text-gray-600">
-                  Don't have an account?{" "}
-                  <Link to="/register" className="text-brand-orange hover:underline">
-                    Register here
-                  </Link>
+                <h2 className="text-xl font-semibold mb-3">Volunteer</h2>
+                <p className="text-gray-600 mb-4">
+                  Access your volunteer profile and manage your activities.
                 </p>
+                <Button className="w-full" asChild>
+                  <Link to="/login/volunteer">Volunteer Login</Link>
+                </Button>
               </div>
-            </Card>
+              
+              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center">
+                <div className="inline-flex p-3 rounded-full bg-orange-50 mb-4">
+                  <Building2 className="h-6 w-6 text-brand-orange" />
+                </div>
+                <h2 className="text-xl font-semibold mb-3">Organization</h2>
+                <p className="text-gray-600 mb-4">
+                  Manage events and connect with volunteers through your organization account.
+                </p>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/login/organization">Organization Login</Link>
+                </Button>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center">
+                <div className="inline-flex p-3 rounded-full bg-gray-100 mb-4">
+                  <Shield className="h-6 w-6 text-gray-700" />
+                </div>
+                <h2 className="text-xl font-semibold mb-3">Admin</h2>
+                <p className="text-gray-600 mb-4">
+                  Access the admin dashboard to manage the platform.
+                </p>
+                <Button variant="secondary" className="w-full text-white" asChild>
+                  <Link to="/login/admin">Admin Login</Link>
+                </Button>
+              </div>
+            </div>
+            
+            <div className="text-center mt-8">
+              <p className="text-gray-600">
+                Don't have an account yet? <Link to="/register" className="text-brand-orange hover:underline">Register here</Link>
+              </p>
+            </div>
           </div>
         </div>
       </main>
