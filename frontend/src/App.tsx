@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Store from '@/pages/store';
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -21,6 +22,7 @@ import EventDetailPage from '@/pages/EventDetailPage';
 import OrganizationDetailPage from "./pages/OrganizationDetailPage";
 import About from "./pages/About";
 import OrganizationDashboardPage from './pages/OrganizationDashboardPage';
+import Purchase from './pages/purchase'; 
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +32,7 @@ const queryClient = new QueryClient({
     },
   },
 });
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -52,6 +55,8 @@ const App = () => (
           <Route path="/volunteer-dashboard" element={<VolunteerDashboardPage />} />
           <Route path="/organization-dashboard" element={<OrganizationDashboardPage />} />
           <Route path="/create-event" element={<CreateEventPage />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/purchase" element={<Purchase />} /> {/* Added Purchase route */}
           <Route path="/about" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
