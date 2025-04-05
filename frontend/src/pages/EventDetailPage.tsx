@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   CalendarIcon, 
   Clock, 
@@ -37,6 +37,9 @@ const EventDetailPage = () => {
     const fetchEvent = async () => {
       setLoading(true);
       try {
+        // Log the event ID we're fetching
+        console.log("Fetching event with ID:", id);
+        
         const response = await fetch(`http://localhost:5000/api/events/${id}`);
         
         if (!response.ok) {
@@ -48,6 +51,9 @@ const EventDetailPage = () => {
         if (!data.event) {
           throw new Error('Event not found');
         }
+        
+        console.log("Event data received:", data.event);
+        console.log("Organization data:", data.event.organizer);
         
         // Transform API data to match our Event type
         const eventData: Event = {
@@ -63,9 +69,10 @@ const EventDetailPage = () => {
           volunteers_limit: data.event.volunteers_limit || 0,
           volunteers_registered: data.event.acceptedVolunteers || [],
           organizer: {
-            id: data.event.organizer?._id || '',
+            // Store the organization ID correctly from the data
+            id: data.event.organizer?._id || data.event.organizer?.id || '',
             name: data.event.organizer?.name || '',
-            contact_email: data.event.organizer?.contact_email || '',
+            contact_email: data.event.organizer?.contact_email || data.event.organizer?.email || '',
             phone: data.event.organizer?.phone || ''
           },
           image_url: data.event.image_url || `https://source.unsplash.com/800x400/?volunteer,${data.event.cause?.toLowerCase()}`
@@ -141,12 +148,66 @@ const EventDetailPage = () => {
   };
   
   const handleViewOrganization = () => {
-    if (event?.organizer?.id) {
-      navigate(`/organizations/${event.organizer.id}`);
+    // Log the current event organization data to debug
+    console.log("Current event organizer data:", event?.organizer);
+    
+    // Check if we have a valid organizer ID
+    if (event?.organizer?.id && event.organizer.id !== 'undefined' && event.organizer.id !== '') {
+      console.log("Navigating to organization with ID:", event.organizer.id);
+      
+      // Check if ID is a valid MongoDB ObjectId (24 hex chars)
+      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(event.organizer.id);
+      
+      if (isValidObjectId) {
+        navigate(`/organizations/${event.organizer.id}`);
+      } else {
+        // Try to find organization by name instead
+        handleFindOrganizationByName();
+      }
     } else {
+      // No ID available, try to find organization by name
+      handleFindOrganizationByName();
+    }
+  };
+  
+  // New function to find organization by name
+  const handleFindOrganizationByName = async () => {
+    if (!event?.organizer?.name) {
       toast({
         title: "Organization not found",
         description: "Sorry, organization details are not available",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      console.log("Searching for organization by name:", event.organizer.name);
+      
+      // Call API to find organization by name
+      const response = await fetch(`http://localhost:5000/api/organizations/search?name=${encodeURIComponent(event.organizer.name)}`);
+      
+      if (!response.ok) {
+        throw new Error("Failed to find organization");
+      }
+      
+      const data = await response.json();
+      
+      if (data.organization && data.organization._id) {
+        console.log("Found organization:", data.organization);
+        navigate(`/organizations/${data.organization._id}`);
+      } else {
+        toast({
+          title: "Organization not found",
+          description: "Sorry, we couldn't find this organization in our database",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error finding organization:", error);
+      toast({
+        title: "Error finding organization",
+        description: "There was a problem finding the organization details",
         variant: "destructive",
       });
     }
@@ -182,7 +243,7 @@ const EventDetailPage = () => {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-grow container py-16 flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Event Not Found</h2>
             <p className="text-gray-600 mb-8">{error || "The event you're looking for doesn't exist."}</p>
             <Button onClick={() => navigate('/events')}>
@@ -196,16 +257,23 @@ const EventDetailPage = () => {
     );
   }
   
+  // Create a route path for the organization profile if the ID exists and is valid
+  const organizationPath = event?.organizer?.id && 
+    event.organizer.id !== '' && 
+    /^[0-9a-fA-F]{24}$/.test(event.organizer.id) 
+      ? `/organizations/${event.organizer.id}` 
+      : undefined;
+  
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
       
-      <main className="flex-grow py-8">
+      <main className="flex-grow py-10 px-4">
         <div className="container max-w-5xl mx-auto">
           {/* Back Button */}
           <Button 
             variant="ghost" 
-            className="mb-6" 
+            className="mb-8" 
             onClick={() => navigate('/events')}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -213,8 +281,8 @@ const EventDetailPage = () => {
           </Button>
           
           {/* Event Header */}
-          <div className="rounded-lg overflow-hidden bg-white border shadow-sm">
-            <div className="h-64 bg-gradient-to-r from-brand-blue to-brand-teal relative">
+          <div className="rounded-xl overflow-hidden bg-white border shadow-md mb-10">
+            <div className="h-72 md:h-80 relative">
               {event.image_url && (
                 <img 
                   src={event.image_url}
@@ -222,42 +290,46 @@ const EventDetailPage = () => {
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                <Badge className="absolute top-4 right-4 bg-white text-brand-teal">{event.cause}</Badge>
+              <div className="absolute inset-0 bg-black bg-opacity-40">
+                <Badge className="absolute top-6 right-6 bg-white text-brand-teal font-medium text-sm px-3 py-1">
+                  {event.cause}
+                </Badge>
               </div>
             </div>
             
-            <div className="p-8">
-              <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
+            <div className="p-6 md:p-8">
+              <h1 className="text-2xl md:text-3xl font-bold mb-5">{event.title}</h1>
               
-              <div className="flex flex-wrap gap-6 mb-6">
-                <div className="flex items-center text-gray-600">
-                  <CalendarIcon className="h-5 w-5 mr-2 text-brand-orange" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="flex items-center text-gray-700">
+                  <CalendarIcon className="h-5 w-5 mr-3 text-brand-orange flex-shrink-0" />
                   <span>{formattedDate}</span>
                 </div>
                 
-                <div className="flex items-center text-gray-600">
-                  <Clock className="h-5 w-5 mr-2 text-brand-orange" />
+                <div className="flex items-center text-gray-700">
+                  <Clock className="h-5 w-5 mr-3 text-brand-orange flex-shrink-0" />
                   <span>{event.time} ({event.duration})</span>
                 </div>
                 
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="h-5 w-5 mr-2 text-brand-orange" />
-                  <span>{event.location.address}, {event.location.city}, {event.location.pincode}</span>
+                <div className="flex items-center text-gray-700">
+                  <MapPin className="h-5 w-5 mr-3 text-brand-orange flex-shrink-0" />
+                  <span className="truncate">{event.location.address}, {event.location.city}, {event.location.pincode}</span>
                 </div>
                 
-                <div className="flex items-center text-gray-600">
-                  <Users className="h-5 w-5 mr-2 text-brand-orange" />
+                <div className="flex items-center text-gray-700">
+                  <Users className="h-5 w-5 mr-3 text-brand-orange flex-shrink-0" />
                   <span>
                     {event.volunteers_registered.length} / {event.volunteers_limit} volunteers
                   </span>
                 </div>
               </div>
               
+              <Separator className="my-6" />
+              
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-500">Organized by:</span>
-                  <span className="ml-2 font-medium">{event.organizer.name}</span>
+                <div className="flex items-center bg-gray-50 px-4 py-2 rounded-lg">
+                  <span className="text-sm text-gray-500 mr-2">Organized by:</span>
+                  <span className="font-medium">{event.organizer.name}</span>
                 </div>
                 
                 <div className="flex gap-3">
@@ -279,105 +351,146 @@ const EventDetailPage = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Event Details */}
-            <div className="md:col-span-2 space-y-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>About This Opportunity</CardTitle>
+            <div className="lg:col-span-2 space-y-8">
+              <Card className="shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl">About This Opportunity</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 whitespace-pre-line">{event.description}</p>
+                  <p className="text-gray-700 whitespace-pre-line leading-relaxed">{event.description}</p>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Required Skills</CardTitle>
+              <Card className="shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl">Required Skills</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {event.skills_required.map((skill) => (
-                      <Badge key={skill} variant="outline" className="bg-gray-50">
-                        {skill}
-                      </Badge>
-                    ))}
+                  {event.skills_required.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {event.skills_required.map((skill) => (
+                        <Badge 
+                          key={skill} 
+                          variant="secondary" 
+                          className="bg-slate-100 text-slate-800 hover:bg-slate-200 px-3 py-1"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No specific skills required</p>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Share This Event - Moved to left column */}
+              <Card className="shadow-sm bg-gradient-to-br from-indigo-50 to-white border-indigo-100">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl flex items-center">
+                    <Share2 className="h-5 w-5 mr-2 text-indigo-500" />
+                    Share This Event
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Help us spread the word about this volunteer opportunity.
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200" 
+                      onClick={handleShareTwitter}
+                    >
+                      Twitter
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full bg-blue-500 text-white hover:bg-blue-600 border-blue-600" 
+                      onClick={handleShareFacebook}
+                    >
+                      Facebook
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full bg-red-50 text-red-600 hover:bg-red-100 border-red-200" 
+                      onClick={handleShareEmail}
+                    >
+                      Email
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
             
-            {/* Organizer Info */}
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Organizer Information</CardTitle>
+            {/* Right Column - Organizer Info and Similar Events */}
+            <div className="space-y-6">
+              {/* Organizer Information */}
+              <Card className="shadow-sm bg-gradient-to-br from-amber-50 to-white border-amber-100">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl flex items-center">
+                    <Building className="h-5 w-5 mr-2 text-amber-500" />
+                    Organizer Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Building className="h-5 w-5 text-gray-500" />
-                    <span>{event.organizer.name}</span>
+                  <div className="flex items-center gap-3 bg-white p-3 rounded-md">
+                    <Building className="h-5 w-5 text-brand-blue" />
+                    <span className="font-medium">{event.organizer.name}</span>
                   </div>
                   
-                  <Separator />
+                  <Separator className="my-2" />
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 bg-white p-3 rounded-md">
                     <Mail className="h-5 w-5 text-gray-500" />
-                    <span>{event.organizer.contact_email}</span>
+                    <span className="text-sm overflow-hidden text-ellipsis">{event.organizer.contact_email}</span>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 bg-white p-3 rounded-md">
                     <Phone className="h-5 w-5 text-gray-500" />
-                    <span>{event.organizer.phone}</span>
+                    <span>{event.organizer.phone || "No phone available"}</span>
                   </div>
                   
-                  <Separator />
-                  
-                  <div className="pt-2">
-                    <Button variant="outline" className="w-full" onClick={handleViewOrganization}>
+                  <div className="pt-4">
+                    <Button 
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-white" 
+                      onClick={handleViewOrganization}
+                    >
                       View Organization Profile
                     </Button>
                   </div>
                 </CardContent>
               </Card>
               
-              <div className="mt-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="font-medium mb-2">Share this event</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Help us spread the word about this volunteer opportunity.
+              {/* Similar Opportunities */}
+              <Card className="shadow-sm bg-gradient-to-br from-emerald-50 to-white border-emerald-100 h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl flex items-center">
+                    <Users className="h-5 w-5 mr-2 text-emerald-500" />
+                    Similar Opportunities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center justify-center text-center p-4 bg-white rounded-md h-[160px]">
+                    <p className="text-gray-500 mb-4">
+                      Similar volunteer events will appear here
                     </p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={handleShareTwitter}>
-                        Twitter
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1" onClick={handleShareFacebook}>
-                        Facebook
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1" onClick={handleShareEmail}>
-                        Email
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-          
-          {/* Similar Events */}
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-6">Similar Opportunities</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* This would be populated with similar events */}
-              <div className="border rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center text-center h-48">
-                <p className="text-gray-500 mb-4">
-                  Similar events will be shown here
-                </p>
-                <Button variant="outline" onClick={() => navigate('/events')}>
-                  Browse More Events
-                </Button>
-              </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/events')} 
+                      size="sm"
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white border-none"
+                    >
+                      Browse More Events
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

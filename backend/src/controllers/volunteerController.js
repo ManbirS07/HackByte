@@ -62,3 +62,45 @@ export const applyForEvent = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// Login volunteer
+export const loginVolunteer = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        console.log('Attempting login for:', email);
+        
+        // Find volunteer by email
+        const volunteer = await Volunteer.findOne({ email });
+        
+        if (!volunteer) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        
+        // In production, you would use bcrypt.compare
+        // This is a simplified implementation for demonstration
+        if (volunteer.password !== password) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        
+        // Generate JWT token (assuming jwt is imported)
+        // In a real app, use a library like jsonwebtoken
+        const token = 'sample-jwt-token-' + volunteer._id; // Simplified for demo
+        
+        console.log('Login successful for volunteer:', volunteer.fullName);
+        
+        // Return success with token and basic volunteer info
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            volunteer: {
+                id: volunteer._id,
+                fullName: volunteer.fullName,
+                email: volunteer.email
+            }
+        });
+    } catch (error) {
+        console.error('Volunteer login error:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.toString() });
+    }
+};
