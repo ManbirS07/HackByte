@@ -27,10 +27,26 @@ const AdminLogin = () => {
     setIsSubmitting(true);
 
     try {
-      // Mock login logic for demonstration
-      console.log('Logging in as admin with email:', formData.email);
+      // Post login data to admin login endpoint
+      const response = await fetch('http://127.0.0.1:5000/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
       
-      // If this were a real app, we would validate credentials with an API
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      
+      // Store auth token if returned from API
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userType', 'admin');
+      }
 
       // Show success message
       toast({
@@ -44,7 +60,7 @@ const AdminLogin = () => {
       console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Please try again.",
+        description: error instanceof Error ? error.message : "Invalid email or password. Please try again.",
         variant: "destructive",
       });
     } finally {
