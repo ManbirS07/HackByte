@@ -282,7 +282,7 @@ const EventDetailPage = () => {
           
           {/* Event Header */}
           <div className="rounded-xl overflow-hidden bg-white border shadow-md mb-10">
-            <div className="h-72 md:h-80 relative">
+            <div className="h-72 md:h-80 relative bg-gradient-to-r from-brand-blue to-brand-teal">
               {event.image_url && (
                 <img 
                   src={event.image_url}

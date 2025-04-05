@@ -27,8 +27,10 @@ const OrganizationLogin = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Attempting organization login with:', formData.email);
+      
       // Post login data to organization login endpoint
-      const response = await fetch('http://127.0.0.1:5000/api/organization/login', {
+      const response = await fetch('http://localhost:5000/api/organizations/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,12 +48,14 @@ const OrganizationLogin = () => {
       if (data.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userType', 'organization');
+        localStorage.setItem('organizationId', data.organization.id);
+        localStorage.setItem('organization', JSON.stringify(data.organization));
       }
 
       // Show success message
       toast({
         title: "Login Successful",
-        description: `Welcome back to Kindness Unite!`,
+        description: `Welcome back, ${data.organization.name || 'Organization'}!`,
       });
 
       // Redirect to organization dashboard
@@ -91,7 +95,7 @@ const OrganizationLogin = () => {
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="organization@example.com"
+                      placeholder="organization@example.org"
                       required
                       value={formData.email}
                       onChange={handleInputChange}

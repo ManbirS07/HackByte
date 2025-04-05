@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import {
 
 const OrganizationRegisterForm = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -30,7 +31,7 @@ const OrganizationRegisterForm = () => {
     twitter: '',
     instagram: '',
     linkedin: '',
-    logo: null as File | null,
+    logo: '',
     password: '',
     confirmPassword: ''
   });
@@ -38,15 +39,6 @@ const OrganizationRegisterForm = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({
-        ...formData,
-        logo: e.target.files[0],
-      });
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,8 +56,8 @@ const OrganizationRegisterForm = () => {
     }
 
     try {
-      // In a real app, we would send this data to an API
-      console.log("Organization data to be submitted:", {
+      // Format data according to expected backend format
+      const organizationData = {
         name: formData.name,
         description: formData.description,
         email: formData.email,
@@ -82,20 +74,87 @@ const OrganizationRegisterForm = () => {
           instagram: formData.instagram,
           linkedin: formData.linkedin
         },
-        logo_url: formData.logo ? URL.createObjectURL(formData.logo) : null
+        logo_url: formData.logo,
+        password: formData.password
+      };
+      
+      console.log('Sending organization data to API:', JSON.stringify({
+        ...organizationData,
+        password: organizationData.password ? '[PASSWORD EXISTS]' : '[NO PASSWORD]'
+      }, null, 2));
+      
+      // Send data to backend API
+      const response = await fetch('http://localhost:5000/api/organizations/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(organizationData)
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw { 
+          response: {
+            status: response.status,
+            data: errorData
+          }
+        };
+      }
+      
+      const data = await response.json();
+      console.log('Registration successful:', data);
       
       toast({
         title: "Registration successful!",
         description: "Your organization has been registered and is pending verification.",
       });
 
-      // In a real app, we might redirect to a login page or dashboard
-    } catch (error) {
+      // Store token and organization data in localStorage
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userType', 'organization');
+        localStorage.setItem('userId', data.organization.id);
+        localStorage.setItem('user', JSON.stringify(data.organization));
+        
+        // Redirect to organization dashboard
+        setTimeout(() => {
+          navigate('/organization-dashboard');
+        }, 1500);
+      }
+    } catch (error: any) {
       console.error("Registration error:", error);
+      
+      // More detailed error handling
+      let errorMessage = "There was a problem registering your organization.";
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.log('Error data:', error.response.data);
+        console.log('Error status:', error.response.status);
+        
+        if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+          // Handle validation errors
+          errorMessage = error.response.data.errors.map((err: any) => err.msg).join(", ");
+        } else if (error.response.data.msg) {
+          errorMessage = error.response.data.msg;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "No response received from server. Please check your connection.";
+      } else {
+        // Something happened in setting up the request
+        errorMessage = error.message || "Unknown error occurred";
+      }
+      
       toast({
         title: "Registration failed",
-        description: "There was a problem registering your organization.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -285,20 +344,22 @@ const OrganizationRegisterForm = () => {
           <CardHeader>
             <CardTitle>Organization Logo</CardTitle>
             <CardDescription>
-              Upload your organization's logo.
+              Provide a URL to your organization's logo.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="logo">Logo</Label>
+              <Label htmlFor="logo">Logo URL</Label>
               <Input
                 id="logo"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
+                name="logo"
+                type="url"
+                placeholder="https://example.com/your-logo.png"
+                value={formData.logo}
+                onChange={handleInputChange}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Recommended size: 400x400 pixels. Max size: 2MB.
+                Provide a direct link to your logo image. Recommended size: 400x400 pixels.
               </p>
             </div>
           </CardContent>

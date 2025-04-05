@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router(); 
 import { getallevents, geteventbyid, createEvent} from '../controllers/eventController.js';
-import { getallOrganizations, getorgbyid, createOrganization, findOrganizationByName } from '../controllers/organizationController.js';
+import { getallOrganizations, getorgbyid, createOrganization, findOrganizationByName, loginOrganization } from '../controllers/organizationController.js';
 import { createVolunteer, getVolunteerById, updateVolunteer, getAllVolunteers, loginVolunteer } from '../controllers/volunteerController.js';
 import { 
   getOrganizationApplications, 
@@ -19,6 +19,7 @@ router.get('/volunteers', getAllVolunteers);
 
 // Organization routes 
 router.post('/organizations/register', createOrganization);
+router.post('/organizations/login', loginOrganization); // Add login endpoint
 router.get('/organizations', getallOrganizations);
 router.get('/organizations/search', findOrganizationByName);
 router.get('/organizations/:id', getorgbyid);
