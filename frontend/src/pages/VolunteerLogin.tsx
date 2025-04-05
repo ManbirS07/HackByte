@@ -49,6 +49,7 @@ const VolunteerLogin = () => {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userType', 'volunteer');
         localStorage.setItem('userId', data.volunteer.id);
+        localStorage.setItem('user', JSON.stringify(data.volunteer));
       }
 
       // Show success message
