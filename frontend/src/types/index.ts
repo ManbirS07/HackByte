@@ -109,6 +109,46 @@ export interface Review {
   createdAt: Date;
 }
 
+export interface VolunteerApplication {
+  id: string;
+  volunteer: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    interests: string[];
+    governmentId: {
+      type: string;
+      number: string;
+      verified: boolean;
+      document_url: string;
+    };
+    resume_url: string;
+    intro_video_url: string;
+    points: number;
+    badges: string[];
+    completedEvents: number;
+    trustScore: number;
+  };
+  event: {
+    id: string;
+    title: string;
+    description: string;
+    cause: string;
+    date: Date;
+    time: string;
+  };
+  status: 'pending' | 'accepted' | 'rejected';
+  appliedAt: Date;
+  reviewedAt?: Date;
+  aiAnalysis?: {
+    score: number;
+    summary: string;
+    strengths: string[];
+    suggestions: string[];
+  };
+}
+
 export const CAUSES = [
   "Health",
   "Education",
