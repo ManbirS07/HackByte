@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Search, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,12 +34,39 @@ const EventSearch = ({ onSearch }: EventSearchProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch({
-      causes: selectedCauses.length > 0 ? selectedCauses : undefined,
-      skills: selectedSkills.length > 0 ? selectedSkills : undefined,
-      location: location || undefined,
-      date: date ? new Date(date) : undefined,
+    
+    console.log("Search form submitted with:", {
+      keyword,
+      location,
+      causes: selectedCauses,
+      skills: selectedSkills,
+      date
     });
+    
+    const filters: SearchFilters = {};
+    
+    if (keyword.trim()) {
+      // Add keyword handling if needed
+    }
+    
+    if (location.trim()) {
+      filters.location = location;
+    }
+    
+    if (selectedCauses.length > 0) {
+      filters.causes = selectedCauses;
+    }
+    
+    if (selectedSkills.length > 0) {
+      filters.skills = selectedSkills;
+    }
+    
+    if (date) {
+      filters.date = new Date(date); // Convert string date to Date object
+    }
+    
+    console.log("Passing filters to parent:", filters);
+    onSearch(filters);
   };
 
   const handleCauseToggle = (cause: string) => {
@@ -65,6 +91,7 @@ const EventSearch = ({ onSearch }: EventSearchProps) => {
     setSelectedCauses([]);
     setSelectedSkills([]);
     setDate('');
+    console.log("Resetting filters");
     onSearch({});
   };
 

@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import VolunteerLogin from "./pages/VolunteerLogin";
 import OrganizationLogin from "./pages/OrganizationLogin";
 import AdminLogin from "./pages/AdminLogin";
+import EventDetailPage from '@/pages/EventDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ const App = () => (
         <Route path="/register/volunteer" element={<VolunteerRegister />} />
         <Route path="/register/organization" element={<OrganizationRegister />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/organizations" element={<Organizations />} />
         <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
         <Route path="/volunteer-dashboard" element={<VolunteerDashboardPage />} />

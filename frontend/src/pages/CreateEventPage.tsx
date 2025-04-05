@@ -1,9 +1,11 @@
-
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import EventForm from '@/components/organization/EventForm';
+import { useNavigate } from 'react-router-dom';
 
 const CreateEventPage = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

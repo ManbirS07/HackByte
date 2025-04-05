@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Users, Calendar, Building2, Award } from 'lucide-react';
@@ -113,7 +112,6 @@ const Index = () => {
               </div>
             </div>
           </div>
-          {/* <div className="hidden lg:block absolute right-0 bottom-0 w-1/3 h-full bg-[url('/placeholder.svg')] bg-contain bg-no-repeat bg-right-bottom"></div> */}
         </section>
         
         {/* Stats Section */}

@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { CAUSES, SKILLS } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ interface EventFormProps {
 
 const EventForm = ({ isEditing = false }: EventFormProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -89,28 +90,44 @@ const EventForm = ({ isEditing = false }: EventFormProps) => {
       return;
     }
 
+    const eventData = {
+      title: formData.title,
+      description: formData.description,
+      cause: formData.cause,
+      location: {
+        city: formData.city,
+        address: formData.address,
+        pincode: formData.pincode
+      },
+      date: new Date(formData.date),
+      time: formData.time,
+      duration: formData.duration,
+      skills_required: formData.skills,
+      volunteers_limit: parseInt(formData.volunteers_limit),
+      organizer: {
+        name: formData.organizerName,
+        contact_email: formData.organizerEmail,
+        phone: formData.organizerPhone
+      },
+      image_url: `https://source.unsplash.com/800x400/?volunteer,${formData.cause.toLowerCase()}`
+    };
+
     try {
-      // In a real app, we would send this data to an API
-      console.log("Event data to be submitted:", {
-        title: formData.title,
-        description: formData.description,
-        cause: formData.cause,
-        location: {
-          city: formData.city,
-          address: formData.address,
-          pincode: formData.pincode
+      // Send data to the API
+      const response = await fetch('http://localhost:5000/api/create-event', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        date: formData.date,
-        time: formData.time,
-        duration: formData.duration,
-        skills_required: formData.skills,
-        volunteers_limit: parseInt(formData.volunteers_limit),
-        organizer: {
-          name: formData.organizerName,
-          contact_email: formData.organizerEmail,
-          phone: formData.organizerPhone
-        }
+        body: JSON.stringify(eventData),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to create event');
+      }
+
+      const data = await response.json();
+      console.log("Event created successfully:", data);
       
       toast({
         title: isEditing ? "Event updated!" : "Event created!",
@@ -119,7 +136,8 @@ const EventForm = ({ isEditing = false }: EventFormProps) => {
           : "Your event has been successfully created.",
       });
 
-      // In a real app, we might redirect to the event page or dashboard
+      // Redirect to the events page
+      navigate('/events');
     } catch (error) {
       console.error("Event submission error:", error);
       toast({

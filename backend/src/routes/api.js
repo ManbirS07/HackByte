@@ -1,4 +1,3 @@
-
 import express from 'express';
 const router = express.Router(); 
 import { getallevents, geteventbyid, createEvent} from '../controllers/eventController.js';

@@ -1,12 +1,11 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import EventCard from '@/components/common/EventCard';
 import EventSearch from '@/components/events/EventSearch';
 import { Event, SearchFilters } from '@/types';
 
-// Mock events data
+// Mock events data for fallback
 const mockEvents: Event[] = [
   {
     id: '1',
@@ -149,49 +148,118 @@ const mockEvents: Event[] = [
 ];
 
 const Events = () => {
-  const [events, setEvents] = useState(mockEvents);
+  const [events, setEvents] = useState<Event[]>([]);
   const [filters, setFilters] = useState<SearchFilters>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+  
+  // Fetch events from API
+  const fetchEvents = async (filters: SearchFilters = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log("Fetching events with filters:", JSON.stringify(filters));
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      
+      if (filters.causes && filters.causes.length > 0) {
+        // Clear any previous causes
+        filters.causes.forEach(cause => {
+          params.append('causes', cause);
+        });
+        console.log("Added cause filters:", filters.causes);
+      }
+      
+      if (filters.skills && filters.skills.length > 0) {
+        // Clear any previous skills
+        filters.skills.forEach(skill => {
+          params.append('skills', skill);
+        });
+        console.log("Added skill filters:", filters.skills);
+      }
+      
+      if (filters.location && filters.location.trim() !== '') {
+        params.append('location', filters.location.trim());
+        console.log("Added location filter:", filters.location);
+      }
+      
+      if (filters.date) {
+        const dateString = typeof filters.date === 'string' 
+          ? filters.date 
+          : filters.date.toISOString();
+        params.append('date', dateString);
+        console.log("Added date filter:", dateString);
+      }
+      
+      const queryString = params.toString();
+      console.log("Final query string:", queryString);
+      
+      // Make API request
+      const url = `http://localhost:5000/api/events${queryString ? '?' + queryString : ''}`;
+      console.log("Making request to:", url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error:", response.status, errorData);
+        throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log("API Response:", data);
+      
+      if (!data.events || !Array.isArray(data.events)) {
+        console.error("Invalid response format:", data);
+        throw new Error('Invalid response format: events array missing');
+      }
+      
+      // Transform API data to match our Event type
+      const formattedEvents: Event[] = data.events.map((event: any) => ({
+        id: event._id || '',
+        title: event.title || '',
+        description: event.description || '',
+        cause: event.cause || '',
+        location: event.location || { city: '', address: '', pincode: '' },
+        date: event.date ? new Date(event.date) : new Date(),
+        time: event.time || '',
+        duration: event.duration || '',
+        skills_required: event.skills_required || [],
+        volunteers_limit: event.volunteers_limit || 0,
+        volunteers_registered: event.acceptedVolunteers || [],
+        organizer: {
+          id: event.organizer?._id || '',
+          name: event.organizer?.name || '',
+          contact_email: event.organizer?.contact_email || '',
+          phone: event.organizer?.phone || ''
+        },
+        image_url: event.image_url || ''
+      }));
+      
+      console.log("Formatted events:", formattedEvents.length);
+      setEvents(formattedEvents);
+      
+      if (formattedEvents.length === 0) {
+        console.log("No events found matching the criteria");
+      }
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Using mock data instead.');
+      setEvents(mockEvents); // Fallback to mock data
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleSearch = (filters: SearchFilters) => {
-    // In a real app, we would call an API with these filters
-    console.log("Search filters:", filters);
-    
-    // For demonstration, we'll filter the mock events
-    let filteredEvents = [...mockEvents];
-    
-    if (filters.causes && filters.causes.length > 0) {
-      filteredEvents = filteredEvents.filter(event => 
-        filters.causes?.includes(event.cause)
-      );
-    }
-    
-    if (filters.skills && filters.skills.length > 0) {
-      filteredEvents = filteredEvents.filter(event => 
-        event.skills_required.some(skill => 
-          filters.skills?.includes(skill)
-        )
-      );
-    }
-    
-    if (filters.location) {
-      filteredEvents = filteredEvents.filter(event => 
-        event.location.city.toLowerCase().includes(filters.location!.toLowerCase()) ||
-        event.location.address.toLowerCase().includes(filters.location!.toLowerCase())
-      );
-    }
-    
-    if (filters.date) {
-      const searchDate = new Date(filters.date);
-      filteredEvents = filteredEvents.filter(event => {
-        const eventDate = new Date(event.date);
-        return eventDate.getFullYear() === searchDate.getFullYear() &&
-               eventDate.getMonth() === searchDate.getMonth() &&
-               eventDate.getDate() === searchDate.getDate();
-      });
-    }
-    
-    setEvents(filteredEvents);
     setFilters(filters);
+    fetchEvents(filters);
   };
 
   return (
@@ -211,7 +279,15 @@ const Events = () => {
             </div>
           </div>
           
-          {events.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <p className="text-xl font-medium">Loading events...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16 text-red-500">
+              <p>{error}</p>
+            </div>
+          ) : events.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {events.map(event => (
                 <EventCard key={event.id} event={event} />
