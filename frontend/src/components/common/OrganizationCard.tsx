@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -72,8 +71,10 @@ const OrganizationCard = ({ organization }: OrganizationCardProps) => {
             </a>
           )}
         </div>
-        <Button asChild>
-          <Link to={`/organizations/${organization.id}`}>View Profile</Link>
+        <Button asChild onClick={() => { console.log("Organization ID:", organization.id || organization._id) }}>
+          <Link to={`/organizations/${organization.id || organization._id}`}>
+            View Profile
+          </Link>
         </Button>
       </CardFooter>
     </Card>

@@ -56,6 +56,7 @@ export interface Organization {
   };
   logo_url: string;
   verified: boolean;
+  createdAt?: Date; // Add createdAt property as optional
 }
 
 export interface Event {

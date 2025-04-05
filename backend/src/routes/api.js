@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router(); 
 import { getallevents, geteventbyid, createEvent} from '../controllers/eventController.js';
-import { getallOrganizations, getorgbyid, createOrganization } from '../controllers/organizationController.js';
+import { getallOrganizations, getorgbyid, createOrganization, findOrganizationByName } from '../controllers/organizationController.js';
 import { createVolunteer, getVolunteerById, updateVolunteer, getAllVolunteers } from '../controllers/volunteerController.js';
 
 // Volunteer routes
@@ -13,6 +13,7 @@ router.get('/volunteers', getAllVolunteers);
 // Organization routes 
 router.post('/organizations/register', createOrganization);
 router.get('/organizations', getallOrganizations);
+router.get('/organizations/search', findOrganizationByName);  // Add this new route
 router.get('/organizations/:id', getorgbyid);
 
 // Event routes 
