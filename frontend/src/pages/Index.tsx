@@ -106,14 +106,14 @@ const Index = () => {
                   </Link>
                 </Button>
                 <Button size="lg" asChild variant="outline" className="border-white text-black hover:bg-white/10">
-                  <Link to="/register-organization">
+                  <Link to="/register/organization">
                     Register Organization
                   </Link>
                 </Button>
               </div>
             </div>
           </div>
-          <div className="hidden lg:block absolute right-0 bottom-0 w-1/3 h-full bg-[url('/placeholder.svg')] bg-contain bg-no-repeat bg-right-bottom"></div>
+          {/* <div className="hidden lg:block absolute right-0 bottom-0 w-1/3 h-full bg-[url('/placeholder.svg')] bg-contain bg-no-repeat bg-right-bottom"></div> */}
         </section>
         
         {/* Stats Section */}

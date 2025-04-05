@@ -14,7 +14,7 @@ const Footer = () => {
                   <circle cx="12" cy="8" r="2"/>
                 </svg>
               </div>
-              <span className="text-xl font-bold">Kindness Unite</span>
+              <span className="text-xl font-bold">Voluntree</span>
             </Link>
             <p className="mt-4 text-sm text-gray-600">
               Connecting passionate volunteers with meaningful causes to create positive change in communities.
@@ -92,7 +92,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-10 border-t border-gray-200 pt-8">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} Kindness Unite. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} Voluntree. All rights reserved.</p>
         </div>
       </div>
     </footer>

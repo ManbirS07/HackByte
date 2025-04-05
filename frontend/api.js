@@ -1,6 +1,3 @@
-// filepath: c:\Users\swami\OneDrive\Desktop\HackByte\frontend\src\pages\Organizations.tsx
-import { fetchOrganizations } from "../../api";
-
 export async function fetchOrganizations() {
   try {
     const response = await fetch("http://localhost:5000/api/organizations");
