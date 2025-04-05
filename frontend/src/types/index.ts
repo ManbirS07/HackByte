@@ -1,4 +1,3 @@
-
 // Common types used across the application
 
 export interface Volunteer {
@@ -81,6 +80,7 @@ export interface Event {
     contact_email: string;
     phone: string;
   };
+  image_url?: string; 
 }
 
 export interface Admin {
