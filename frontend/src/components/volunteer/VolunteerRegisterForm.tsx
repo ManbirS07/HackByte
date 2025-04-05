@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { CAUSES, ID_TYPES, SKILLS } from '@/types';
@@ -7,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileUp } from 'lucide-react';
+import { Link as LucideLink } from 'lucide-react';
+import axios from 'axios';
 import {
   Select,
   SelectContent,
@@ -36,9 +36,9 @@ const VolunteerRegisterForm = () => {
     interests: [] as string[],
     governmentIdType: '',
     governmentIdNumber: '',
-    governmentIdProof: null as File | null,
-    resume: null as File | null,
-    introVideo: null as File | null,
+    governmentIdProofUrl: '',
+    resumeUrl: '',
+    introVideoUrl: '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -57,15 +57,6 @@ const VolunteerRegisterForm = () => {
         : [...prev.interests, cause];
       return { ...prev, interests };
     });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'resume' | 'introVideo' | 'governmentIdProof') => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({
-        ...formData,
-        [type]: e.target.files[0],
-      });
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,30 +93,42 @@ const VolunteerRegisterForm = () => {
       return;
     }
 
-    if (!formData.governmentIdProof) {
+    if (!formData.governmentIdProofUrl) {
       toast({
-        title: "Government ID proof required",
-        description: "Please upload a scan or photo of your government ID.",
+        title: "Government ID proof URL required",
+        description: "Please provide a URL for your government ID proof.",
         variant: "destructive",
       });
       setIsSubmitting(false);
       return;
     }
 
-    if (!formData.resume) {
+    if (!formData.resumeUrl) {
       toast({
-        title: "Resume required",
-        description: "Please upload your resume.",
+        title: "Resume URL required",
+        description: "Please provide the URL to your resume.",
         variant: "destructive",
       });
       setIsSubmitting(false);
       return;
     }
 
-    if (!formData.introVideo) {
+    if (!formData.introVideoUrl) {
       toast({
-        title: "Introduction video required",
-        description: "Please upload a short introduction video.",
+        title: "Introduction video URL required",
+        description: "Please provide a URL to your introduction video.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate URLs
+    const urlRegex = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+    if (!urlRegex.test(formData.governmentIdProofUrl) || !urlRegex.test(formData.resumeUrl) || !urlRegex.test(formData.introVideoUrl)) {
+      toast({
+        title: "Invalid URL format",
+        description: "Please provide valid URLs for your documents and video.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -133,32 +136,92 @@ const VolunteerRegisterForm = () => {
     }
 
     try {
-      // In a real app, we would send this data to an API
-      console.log("Form data to be submitted:", {
-        name: formData.name,
+      // Prepare data using keys expected by backend
+      const volunteerData = {
+        fullName: formData.name,
         email: formData.email,
         phone: formData.phone,
-        interests: formData.interests,
-        governmentId: {
-          type: formData.governmentIdType,
-          number: formData.governmentIdNumber,
-          proof: formData.governmentIdProof?.name,
+        password: formData.password,
+        govId: {
+          idType: formData.governmentIdType,
+          idNumber: formData.governmentIdNumber,
+          idDocument: formData.governmentIdProofUrl,
         },
-        resume: formData.resume?.name,
-        introVideo: formData.introVideo?.name,
+        resume: formData.resumeUrl,
+        introVideo: formData.introVideoUrl,
+        interests: formData.interests,
+      };
+
+      console.log('Sending data to API:', JSON.stringify(volunteerData));
+      
+      // Try with fetch instead of axios to see if that resolves the issue
+      const response = await fetch('http://localhost:5000/api/volunteers/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(volunteerData)
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw { 
+          response: {
+            status: response.status,
+            data: errorData
+          }
+        };
+      }
+      
+      const data = await response.json();
+      console.log('Registration successful:', data);
       
       toast({
         title: "Registration successful!",
         description: "Your volunteer account has been created.",
       });
 
-      // In a real app, we might redirect to a login page or dashboard
-    } catch (error) {
+      // Store the token in localStorage for authentication
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        // Redirect to volunteer dashboard or profile page
+        setTimeout(() => {
+          window.location.href = '/volunteer/dashboard';
+        }, 1500);
+      }
+    } catch (error: any) {
       console.error("Registration error:", error);
+      
+      // More detailed error handling
+      let errorMessage = "There was a problem creating your account.";
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.log('Error data:', error.response.data);
+        console.log('Error status:', error.response.status);
+        
+        if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+          // Handle validation errors
+          errorMessage = error.response.data.errors.map((err: any) => err.msg).join(", ");
+        } else if (error.response.data.msg) {
+          errorMessage = error.response.data.msg;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "No response received from server. Please check your connection.";
+      } else {
+        // Something happened in setting up the request
+        errorMessage = error.message || "Unknown error occurred";
+      }
+      
       toast({
         title: "Registration failed",
-        description: "There was a problem creating your account.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -307,22 +370,23 @@ const VolunteerRegisterForm = () => {
               </div>
               
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="governmentIdProof">Upload ID Proof</Label>
+                <Label htmlFor="governmentIdProofUrl">Government ID Document URL</Label>
                 <div className="flex items-center space-x-2">
                   <Input
-                    id="governmentIdProof"
-                    type="file"
-                    accept="image/*,.pdf"
-                    className="flex-1"
-                    onChange={(e) => handleFileChange(e, 'governmentIdProof')}
+                    id="governmentIdProofUrl"
+                    name="governmentIdProofUrl"
+                    type="url"
+                    placeholder="https://example.com/your-government-id.pdf"
+                    value={formData.governmentIdProofUrl}
+                    onChange={handleInputChange}
                     required
                   />
                   <div className="bg-brand-orange/10 text-brand-orange p-2 rounded-md">
-                    <FileUp className="h-5 w-5" />
+                    <LucideLink className="h-5 w-5" />
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Upload a clear scan or photo of your ID. Max size: 5MB. Accepted formats: .jpg, .png, .pdf
+                  Enter the URL where your government ID document is stored (e.g., Google Drive, Dropbox, etc.)
                 </p>
               </div>
             </div>
@@ -332,35 +396,39 @@ const VolunteerRegisterForm = () => {
         <Card>
           <CardHeader>
             <CardTitle>Resume & Introduction</CardTitle>
-            <CardDescription>Upload your resume and a brief introduction video.</CardDescription>
+            <CardDescription>Provide links to your resume and a brief introduction video.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="resume">Upload Resume (PDF format)</Label>
+                <Label htmlFor="resumeUrl">Resume URL</Label>
                 <Input
-                  id="resume"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => handleFileChange(e, 'resume')}
+                  id="resumeUrl"
+                  name="resumeUrl"
+                  type="url"
+                  placeholder="https://example.com/your-resume.pdf"
+                  value={formData.resumeUrl}
+                  onChange={handleInputChange}
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Max size: 5MB. Accepted formats: .pdf, .doc, .docx
+                  Link to your resume document (PDF, DOC, or DOCX format recommended)
                 </p>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="introVideo">Upload Introduction Video</Label>
+                <Label htmlFor="introVideoUrl">Introduction Video URL</Label>
                 <Input
-                  id="introVideo"
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => handleFileChange(e, 'introVideo')}
+                  id="introVideoUrl"
+                  name="introVideoUrl"
+                  type="url"
+                  placeholder="https://example.com/your-intro-video.mp4"
+                  value={formData.introVideoUrl}
+                  onChange={handleInputChange}
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Max size: 50MB. A brief 30-60 second video introducing yourself and your interests.
+                  Link to a brief 30-60 second video introducing yourself and your interests
                 </p>
               </div>
             </div>
