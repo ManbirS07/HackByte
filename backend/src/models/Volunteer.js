@@ -48,5 +48,5 @@ const volunteerSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
-const Volunteer = mongoose.model('Volunteer', volunteerSchema);
+const Volunteer = mongoose.model('Volunteers', volunteerSchema);
 export default Volunteer;
