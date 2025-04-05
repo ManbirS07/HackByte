@@ -92,19 +92,55 @@ export const getallevents = async(req, res) => {
 export const geteventbyid = async(req, res) => {
     try {
         console.log("Fetching event with ID:", req.params.id);
+        
+        // Use findById and manually resolve organization data
         const event = await Event.findById(req.params.id);
+        
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
         }
         
-        // Include more comprehensive event details if needed
-        // For example, you could populate volunteer data here
-        
         console.log("Found event:", event.title);
-        res.status(200).json({event});
+        
+        // If we have a valid organizer ID, fetch the organization data
+        let organizerData = {
+            _id: event.organizer?.id || '',
+            name: event.organizer?.name || '',
+            contact_email: event.organizer?.contact_email || '',
+            phone: event.organizer?.phone || ''
+        };
+        
+        // If we have a name but no ID, try to find the organization
+        if (event.organizer?.name && (!event.organizer?.id || !mongoose.Types.ObjectId.isValid(event.organizer?.id))) {
+            console.log("Searching for organization by name:", event.organizer.name);
+            
+            try {
+                const Organization = mongoose.model('Organization');
+                const organization = await Organization.findOne({ name: event.organizer.name });
+                
+                if (organization) {
+                    console.log("Found organization by name:", organization.name, "with ID:", organization._id);
+                    organizerData._id = organization._id;
+                    event.organizer.id = organization._id;
+                    await event.save(); // Update the event with the found organization ID
+                }
+            } catch (err) {
+                console.error("Error finding organization by name:", err);
+            }
+        }
+        
+        // Format the response
+        const formattedEvent = {
+            ...event.toObject(),
+            organizer: organizerData
+        };
+        
+        console.log("Event organizer data:", formattedEvent.organizer);
+        
+        res.status(200).json({event: formattedEvent});
     } catch (error) {
         console.error('Error fetching event:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error', error: error.toString() });
     }
 }
 

@@ -112,6 +112,7 @@ const Index = () => {
               </div>
             </div>
           </div>
+          <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-2/5 h-full bg-[url('/banner.jpg')] bg-cover bg-center"></div>
         </section>
         
         {/* Stats Section */}
