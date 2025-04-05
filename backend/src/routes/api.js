@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router(); 
 import { getallevents, geteventbyid, createEvent} from '../controllers/eventController.js';
 import { getallOrganizations, getorgbyid, createOrganization, findOrganizationByName } from '../controllers/organizationController.js';
-import { createVolunteer, getVolunteerById, updateVolunteer, getAllVolunteers } from '../controllers/volunteerController.js';
+import { createVolunteer, getVolunteerById, updateVolunteer, getAllVolunteers, loginVolunteer } from '../controllers/volunteerController.js';
 import { 
   getOrganizationApplications, 
   createApplication, 
@@ -12,6 +12,7 @@ import {
 
 // Volunteer routes
 router.post('/volunteers/register', createVolunteer);
+router.post('/volunteers/login', loginVolunteer); // Add login endpoint
 router.get('/volunteers/:id', getVolunteerById);
 router.put('/volunteers/:id', updateVolunteer);
 router.get('/volunteers', getAllVolunteers);

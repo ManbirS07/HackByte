@@ -27,8 +27,10 @@ const VolunteerLogin = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Attempting login with:', formData.email);
+      
       // Post login data to volunteer login endpoint
-      const response = await fetch('/api/volunteer/login', {
+      const response = await fetch('http://localhost:5000/api/volunteers/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,15 +47,17 @@ const VolunteerLogin = () => {
       // Store auth token if returned from API
       if (data.token) {
         localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userType', 'volunteer');
+        localStorage.setItem('userId', data.volunteer.id);
       }
 
       // Show success message
       toast({
         title: "Login Successful",
-        description: `Welcome back to Kindness Unite!`,
+        description: `Welcome back, ${data.volunteer.fullName || 'Volunteer'}!`,
       });
 
-      // Redirect to volunteer dashboard
+      // Redirect to volunteer dashboard instead of events page
       navigate('/volunteer-dashboard');
     } catch (error) {
       console.error("Login error:", error);
