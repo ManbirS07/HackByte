@@ -65,6 +65,7 @@ const VolunteerDashboard = () => {
   const [userEvents, setUserEvents] = useState<Partial<Event>[]>([]);
   const [userReviews, setUserReviews] = useState<Partial<Review>[]>([]);
   const [userBadges, setUserBadges] = useState<BadgeType[]>(mockBadges);
+  const [userApplications, setUserApplications] = useState<any[]>([]);
 
   // Fetch volunteer data from localStorage and API
   useEffect(() => {
@@ -136,6 +137,17 @@ const VolunteerDashboard = () => {
             }
             
             setUserBadges(earnedBadges);
+            
+            const applicationsResponse = await fetch(`http://localhost:5000/api/volunteers/${userId}/applications`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (applicationsResponse.ok) {
+              const applicationsData = await applicationsResponse.json();
+              setUserApplications(applicationsData.applications || []);
+            }
             
           } catch (error) {
             console.error("Error fetching user details:", error);
@@ -269,9 +281,15 @@ const VolunteerDashboard = () => {
       </div>
 
       <Tabs defaultValue="badges">
-        <TabsList className="grid w-full grid-cols-3 md:w-auto">
+        <TabsList className="grid w-full grid-cols-4 md:w-auto">
           <TabsTrigger value="badges">Badges & Achievements</TabsTrigger>
           <TabsTrigger value="events">Past Events</TabsTrigger>
+          <TabsTrigger value="applications">
+            Applications
+            {userApplications.length > 0 && (
+              <Badge className="ml-2">{userApplications.length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
         </TabsList>
         <TabsContent value="badges" className="space-y-4">
@@ -384,6 +402,71 @@ const VolunteerDashboard = () => {
               <h3 className="text-lg font-medium mb-2">No events yet</h3>
               <p className="text-gray-500 max-w-md mx-auto mb-6">
                 You haven't participated in any events yet. Find opportunities that match your skills and interests.
+              </p>
+              <Button asChild>
+                <Link to="/events">Browse Events</Link>
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="applications" className="space-y-4">
+          <h2 className="text-xl font-semibold mt-4">Your Applications</h2>
+          {userApplications.length > 0 ? (
+            userApplications.map((application) => (
+              <Card key={application._id} className="overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-brand-orange">{application.event.cause}</Badge>
+                        <span className="text-sm text-gray-500">
+                          Applied on {new Date(application.appliedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold">{application.event.title}</h3>
+                      <p className="text-sm text-gray-600">{application.event.description}</p>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        <span>
+                          {application.event.date ? new Date(application.event.date).toLocaleDateString() : 'Date not available'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <div className="text-sm text-gray-600">
+                        Organized by <span className="font-medium">{application.event.organizer?.name}</span>
+                      </div>
+                      <div className="mt-2 flex items-center">
+                        <Badge 
+                          variant={
+                            application.status === 'pending' ? 'outline' : 
+                            application.status === 'accepted' ? 'default' : 'destructive'
+                          }
+                          className={
+                            application.status === 'accepted' ? 'bg-green-100 text-green-800' : ''
+                          }
+                        >
+                          {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                        </Badge>
+                        {application.status === 'accepted' && (
+                          <span className="text-sm text-green-600 ml-2">
+                            <CheckCircle className="h-3 w-3 inline mr-1" />
+                            Accepted!
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium mb-2">No applications yet</h3>
+              <p className="text-gray-500 max-w-md mx-auto mb-6">
+                You haven't applied for any volunteer opportunities yet.
               </p>
               <Button asChild>
                 <Link to="/events">Browse Events</Link>

@@ -108,21 +108,54 @@ const EventDetailPage = () => {
     setIsApplying(true);
     
     try {
-      // Mock implementation - replace with real API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Get volunteer data from localStorage
+      const userJson = localStorage.getItem('user');
+      const userId = localStorage.getItem('userId');
+      
+      if (!userId || !userJson) {
+        throw new Error('User data not found. Please log in again.');
+      }
+      
+      const userData = JSON.parse(userJson);
+      
+      // Call API to create application
+      const response = await fetch('http://localhost:5000/api/applications/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({
+          volunteerId: userId,
+          eventId: id,
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit application');
+      }
       
       toast({
         title: "Application Submitted!",
         description: "Your application has been submitted. The organizer will review it shortly.",
       });
       
-      // Refresh event data to show updated status
-      // In a real implementation, you would update the UI to reflect the pending application
-    } catch (err) {
-      console.error('Error applying for event:', err);
+      // Update event data to reflect the application
+      if (event) {
+        setEvent({
+          ...event,
+          volunteers_limit: event.volunteers_limit - 1,
+          volunteers_registered: [...event.volunteers_registered, userId]
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error applying to event:', error);
       toast({
         title: "Application Failed",
-        description: "There was an error submitting your application. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit your application. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -263,47 +263,55 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                 
                 <div className="flex items-start gap-2">
                   <span className="font-medium min-w-[100px]">ID Type:</span>
-                  <span>{volunteer.govId.idType}</span>
+                  <span>{volunteer.govId?.idType || 'Not provided'}</span>
                 </div>
                 
                 <div className="flex items-start gap-2">
                   <span className="font-medium min-w-[100px]">ID Number:</span>
-                  <span>{volunteer.govId.idNumber}</span>
+                  <span>{volunteer.govId?.idNumber || 'Not provided'}</span>
                 </div>
                 
                 <div className="flex flex-col gap-1">
                   <span className="font-medium">Areas of Interest:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {volunteer.areaOfInterests.map((interest, idx) => (
+                    {Array.isArray(volunteer.areaOfInterests) ? volunteer.areaOfInterests.map((interest, idx) => (
                       <Badge key={idx} variant="outline" className="bg-gray-100">
                         {interest}
                       </Badge>
-                    ))}
+                    )) : (
+                      <span className="text-gray-500">No interests listed</span>
+                    )}
                   </div>
                 </div>
               </div>
               
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" asChild>
-                  <a href={volunteer.govId.idDocument} target="_blank" rel="noopener noreferrer">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View ID
-                  </a>
-                </Button>
+                {volunteer.govId?.idDocument && (
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={volunteer.govId.idDocument} target="_blank" rel="noopener noreferrer">
+                      <Eye className="h-4 w-4 mr-1" />
+                      View ID
+                    </a>
+                  </Button>
+                )}
                 
-                <Button size="sm" variant="outline" asChild>
-                  <a href={volunteer.resume} target="_blank" rel="noopener noreferrer">
-                    <FileText className="h-4 w-4 mr-1" />
-                    View Resume
-                  </a>
-                </Button>
+                {volunteer.resume && (
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={volunteer.resume} target="_blank" rel="noopener noreferrer">
+                      <FileText className="h-4 w-4 mr-1" />
+                      View Resume
+                    </a>
+                  </Button>
+                )}
                 
-                <Button size="sm" variant="outline" asChild>
-                  <a href={volunteer.introVideo} target="_blank" rel="noopener noreferrer">
-                    <Video className="h-4 w-4 mr-1" />
-                    View Intro Video
-                  </a>
-                </Button>
+                {volunteer.introVideo && (
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={volunteer.introVideo} target="_blank" rel="noopener noreferrer">
+                      <Video className="h-4 w-4 mr-1" />
+                      View Intro Video
+                    </a>
+                  </Button>
+                )}
               </div>
             </div>
             
@@ -314,9 +322,9 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-sm font-medium">Trust Score</span>
-                    <span className="text-sm">{volunteer.trustScore}%</span>
+                    <span className="text-sm">{volunteer.trustScore || 0}%</span>
                   </div>
-                  <Progress value={volunteer.trustScore} className="h-2" />
+                  <Progress value={volunteer.trustScore || 0} className="h-2" />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
@@ -324,7 +332,7 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                     <span className="text-sm text-gray-500">Points</span>
                     <div className="text-xl font-semibold flex items-center">
                       <Award className="h-4 w-4 mr-1" />
-                      {volunteer.points}
+                      {volunteer.points || 0}
                     </div>
                   </div>
                   
@@ -332,17 +340,17 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                     <span className="text-sm text-gray-500">Completed Events</span>
                     <div className="text-xl font-semibold flex items-center">
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      {volunteer.completedEvents?.length || 0}
+                      {Array.isArray(volunteer.completedEvents) ? volunteer.completedEvents.length : 0}
                     </div>
                   </div>
                 </div>
                 
-                {volunteer.badges?.length > 0 && (
+                {Array.isArray(volunteer.badges) && volunteer.badges.length > 0 && (
                   <div>
                     <span className="text-sm font-medium">Badges:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {volunteer.badges.map((badge, idx) => (
-                        <Badge key={idx} variant="outline" className="bg-green-100 text-green-800">
+                        <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
                           {badge}
                         </Badge>
                       ))}
@@ -365,10 +373,10 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                     
                     <p className="text-sm mb-2">{application.aiAnalysis.summary}</p>
                     
-                    {application.aiAnalysis.strengths.length > 0 && (
+                    {application.aiAnalysis.strengths && application.aiAnalysis.strengths.length > 0 && (
                       <div className="mb-2">
-                        <span className="text-sm font-medium">Strengths:</span>
-                        <ul className="text-sm list-disc list-inside">
+                        <span className="text-xs font-medium text-green-600">Strengths:</span>
+                        <ul className="text-xs list-disc list-inside mt-1">
                           {application.aiAnalysis.strengths.map((strength, idx) => (
                             <li key={idx}>{strength}</li>
                           ))}
@@ -376,10 +384,10 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                       </div>
                     )}
                     
-                    {application.aiAnalysis.suggestions.length > 0 && (
+                    {application.aiAnalysis.suggestions && application.aiAnalysis.suggestions.length > 0 && (
                       <div>
-                        <span className="text-sm font-medium">Suggestions:</span>
-                        <ul className="text-sm list-disc list-inside">
+                        <span className="text-xs font-medium text-amber-600">Suggestions:</span>
+                        <ul className="text-xs list-disc list-inside mt-1">
                           {application.aiAnalysis.suggestions.map((suggestion, idx) => (
                             <li key={idx}>{suggestion}</li>
                           ))}
@@ -393,7 +401,7 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
           </div>
         </CardContent>
         
-        <CardFooter className="flex justify-end gap-2 pt-2">
+        <CardFooter className="flex justify-end gap-2">
           {application.status === 'pending' && (
             <>
               {!application.aiAnalysis && (
@@ -424,6 +432,20 @@ const OrganizationDashboard = ({ organizationId }: OrganizationDashboardProps) =
                 <CheckCircle className="h-4 w-4 ml-1" />
               </Button>
             </>
+          )}
+          
+          {application.status === 'accepted' && (
+            <span className="text-sm text-green-600 flex items-center">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Application accepted on {application.reviewedAt ? new Date(application.reviewedAt).toLocaleDateString() : 'unknown date'}
+            </span>
+          )}
+          
+          {application.status === 'rejected' && (
+            <span className="text-sm text-red-600 flex items-center">
+              <XCircle className="h-4 w-4 mr-1" />
+              Application rejected on {application.reviewedAt ? new Date(application.reviewedAt).toLocaleDateString() : 'unknown date'}
+            </span>
           )}
         </CardFooter>
       </Card>

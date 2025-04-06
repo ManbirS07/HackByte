@@ -7,7 +7,8 @@ import {
   getOrganizationApplications, 
   createApplication, 
   analyzeResume, 
-  updateApplicationStatus 
+  updateApplicationStatus,
+  getVolunteerApplications // Import the new controller function
 } from '../controllers/applicationController.js';
 
 // Volunteer routes
@@ -34,6 +35,7 @@ router.post('/applications', createApplication);
 router.get('/organizations/:organizationId/applications', getOrganizationApplications);
 router.post('/applications/:applicationId/analyze', analyzeResume);
 router.put('/applications/:applicationId/status', updateApplicationStatus);
+router.get('/volunteers/:volunteerId/applications', getVolunteerApplications); // New route
 
 // Admin routes 
 router.post('/admins', (req, res) => {

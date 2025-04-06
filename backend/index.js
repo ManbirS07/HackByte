@@ -28,6 +28,10 @@ db.once('open', () => {
 const volunteerRoutes = require('./volunteerRoutes');
 app.use('/api/volunteer', volunteerRoutes); // Notice the /api prefix
 
+// Mount all routes
+const apiRoutes = require('./src/routes/api');
+app.use('/api', apiRoutes);
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

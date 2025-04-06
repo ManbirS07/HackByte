@@ -35,6 +35,34 @@ export const getOrganizationApplications = async (req, res) => {
   }
 };
 
+// Get all applications for a volunteer
+export const getVolunteerApplications = async (req, res) => {
+  try {
+    const { volunteerId } = req.params;
+    
+    if (!volunteerId) {
+      return res.status(400).json({ message: 'Volunteer ID is required' });
+    }
+    
+    // Find applications for this volunteer
+    const applications = await VolunteerApplication.find({ volunteer: volunteerId })
+      .populate({
+        path: 'event',
+        select: 'title description cause date time location organizer'
+      })
+      .populate({
+        path: 'organization',
+        select: 'name email phone website'
+      })
+      .sort({ appliedAt: -1 });
+    
+    res.status(200).json({ applications });
+  } catch (error) {
+    console.error('Error fetching volunteer applications:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.toString() });
+  }
+};
+
 // Create new application
 export const createApplication = async (req, res) => {
   try {
@@ -44,6 +72,11 @@ export const createApplication = async (req, res) => {
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
+    }
+    
+    // Check if event has available slots
+    if (event.volunteers_limit <= 0) {
+      return res.status(400).json({ message: 'This event has no more volunteer slots available' });
     }
     
     const organizationId = event.organizer.id;
@@ -61,6 +94,12 @@ export const createApplication = async (req, res) => {
       });
     }
     
+    // Get volunteer details to include in the application
+    const volunteer = await Volunteer.findById(volunteerId);
+    if (!volunteer) {
+      return res.status(404).json({ message: 'Volunteer not found' });
+    }
+    
     // Create new application
     const application = new VolunteerApplication({
       volunteer: volunteerId,
@@ -70,9 +109,15 @@ export const createApplication = async (req, res) => {
     
     await application.save();
     
+    // Update event to decrement available volunteer slots
+    event.volunteers_limit -= 1;
+    event.volunteers_registered.push(volunteerId);
+    await event.save();
+    
     res.status(201).json({ 
       message: 'Application submitted successfully', 
-      application 
+      application,
+      remainingSlots: event.volunteers_limit
     });
   } catch (error) {
     console.error('Error creating application:', error);

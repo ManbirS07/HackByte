@@ -15,7 +15,7 @@ connectToDatabase();
 
 // CORS configuration - allow all origins in development
 app.use(cors({
-  origin: '*', // Allow all origins in development'http://localhost:8080', 'http://127.0.0.1:8080'],
+  origin: '*', // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -42,10 +42,9 @@ app.get('/', (req, res) => {
   res.send('Volunteer API is running!');
 });
 
-// Start server
-app.listen(process.env.PORT || 5000, () => {
-  console.log(`Server is running on port ${process.env.PORT || 5000}`);
-});
+// Static files
 app.use('/assets', express.static('public/assets'));
+
+// Remove the app.listen call as Vercel will handle this
 
 export default app;
