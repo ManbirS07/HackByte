@@ -1,8 +1,8 @@
 # Voluntree
-
+<!-- 
 <p align="center">
   <img src="frontend/public/logo.png" alt="Voluntree Logo" width="200" />
-</p>
+</p> -->
 
 ## Overview
 Voluntree is a comprehensive volunteer management platform that connects passionate volunteers with meaningful causes to create positive change in communities. It is our HackByte 3.0 hackathon project built within strict deadline of 36 hours.
@@ -85,11 +85,9 @@ Voluntree/
 
 ## Contributors
 - [Govind Dwivedi](https://github.com/govinddwivedi-git)
-- [Team Member 1](https://github.com/teammember1)
-- [Your Name](https://github.com/yourusername)
-- [Team Member 1](https://github.com/teammember1)
-- [Your Name](https://github.com/yourusername)
-- [Team Member 1](https://github.com/teammember1)
+- [Manbir Singh](https://github.com/govinddwivedi-git)
+- [Arnav Kesari](https://github.com/govinddwivedi-git)
+- [Aman Raghuwanshi](https://github.com/govinddwivedi-git)
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
