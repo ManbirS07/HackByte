@@ -120,9 +120,9 @@ Voluntree/
 
 ## Contributors
 - [Govind Dwivedi](https://github.com/govinddwivedi-git)
-- [Manbir Singh](https://github.com/govinddwivedi-git)
-- [Arnav Kesari](https://github.com/govinddwivedi-git)
-- [Aman Raghuwanshi](https://github.com/govinddwivedi-git)
+- [Manbir Singh](https://github.com/ManbirS07)
+- [Arnav Kesari](https://github.com/Arnavkesari)
+<!-- - [Aman Raghuwanshi](https://github.com/govinddwivedi-git) -->
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
