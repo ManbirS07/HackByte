@@ -17,6 +17,41 @@ Voluntree is a comprehensive volunteer management platform that connects passion
 - **Application Processing**: Streamlined workflow for reviewing and accepting volunteer applications
 - **Analytics Dashboard**: Insights on volunteer engagement and impact metrics
 
+## Screenshots
+| ![Screenshot 1](./screenshots/Screenshot%20(2283).png) | ![Screenshot 2](./screenshots/Screenshot%20(2284).png) |
+|---|---|
+
+
+| ![Screenshot 3](./screenshots/Screenshot%20(2285).png) | ![Screenshot 4](./screenshots/Screenshot%20(2286).png) |
+|---|---|
+
+
+| ![Screenshot 5](./screenshots/Screenshot%20(2287).png) | ![Screenshot 6](./screenshots/Screenshot%20(2299).png) |
+|---|---|
+
+| ![Screenshot 7](./screenshots/Screenshot%20(2300).png) | ![Screenshot 8](./screenshots/Screenshot%20(2288).png) |
+|---|---|
+
+
+| ![Screenshot 9](./screenshots/Screenshot%20(2298).png) | ![Screenshot 10](./screenshots/Screenshot%20(2289).png) |
+|---|---|
+
+| ![Screenshot 11](./screenshots/Screenshot%20(2290).png) | ![Screenshot 12](./screenshots/Screenshot%20(2291).png) |
+|---|---|
+
+
+| ![Screenshot 13](./screenshots/Screenshot%20(2292).png) | ![Screenshot 14](./screenshots/Screenshot%20(2293).png) |
+|---|---|
+
+
+| ![Screenshot 15](./screenshots/Screenshot%20(2294).png) | ![Screenshot 16](./screenshots/Screenshot%20(2295).png) |
+|---|---|
+
+
+| ![Screenshot 17](./screenshots/Screenshot%20(2296).png) | ![Screenshot 18](./screenshots/Screenshot%20(2297).png) |
+|---|---|
+
+
 ## Technologies Used
 ### Frontend
 - React + TypeScript
