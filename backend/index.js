@@ -1,11 +1,17 @@
 import express from 'express';
-const app = express();
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
+import mongoose from 'mongoose';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
+
+const app = express();
 
 // Middleware
 app.use(cors());
@@ -24,12 +30,15 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
-// Mount volunteer routes
-const volunteerRoutes = require('./volunteerRoutes');
-app.use('/api/volunteer', volunteerRoutes); // Notice the /api prefix
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Mount volunteer routes - using dynamic import for ES modules
+import('./volunteerRoutes.js').then(module => {
+  app.use('/api/volunteer', module.default);
+  
+  // Start the server
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to load routes:', err);
 });

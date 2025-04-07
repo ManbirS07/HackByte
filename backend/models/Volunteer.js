@@ -1,5 +1,10 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const volunteerSchema = new mongoose.Schema({
   full_name: {
@@ -89,4 +94,6 @@ volunteerSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('Volunteer', volunteerSchema);
+const Volunteer = mongoose.model('Volunteer', volunteerSchema);
+
+export default Volunteer;

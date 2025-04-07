@@ -1,10 +1,16 @@
 import express from 'express';
+import { check, validationResult } from 'express-validator';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import auth from '../middleware/auth.js';
+import Volunteer from '../models/Volunteer.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const Volunteer = require('../models/Volunteer');
-const auth = require('../middleware/auth');
 
 // @route   POST /api/volunteers/register
 // @desc    Register a volunteer
@@ -131,4 +137,4 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
